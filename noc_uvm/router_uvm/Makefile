@@ -1,5 +1,5 @@
-VCS_HOME=/usr/synopsys/vcs/O-2018.09-SP2
-UVM_HOME=/usr/synopsys/vcs/O-2018.09-SP2/etc/uvm
+VCS_HOME ?=
+UVM_HOME ?= $(VCS_HOME)/etc/uvm
 plat=amd64
 
 # COV_FLAG=-cm line+cond+tgl+fsm+branch+assert
@@ -13,6 +13,7 @@ all:
 	make comp sim gencov
 
 comp:
+	@if [ -z "$(VCS_HOME)" ]; then echo "Set VCS_HOME to the root of your VCS installation" >&2; exit 1; fi
 	UVM_HOME=${UVM_HOME} vcs -full64 ${COV_FLAG} ${COMP_FLAG} -timescale=1ns/1ps -f filelist.f +plusarg_save +ntb_random_seed_automatic
 
 sim:
@@ -28,4 +29,4 @@ clean:
 
 cleanall:
 	rm -rf csrc/ simv.daidir/ simv.vdb/ urgReport/
-	rm -f simv tr_db.log ucli.key vc_hdrs.h cm.log output.txt simulation.log vcs.log 
+	rm -f simv tr_db.log ucli.key vc_hdrs.h cm.log output.txt simulation.log vcs.log

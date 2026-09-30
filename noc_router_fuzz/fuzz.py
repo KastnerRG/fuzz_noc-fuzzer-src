@@ -25,7 +25,7 @@ os.system('python seed_generator.py')
 
 # simulate DUT
 # os.system('cd router_simple && make sim-mry  >> ../tb-output.txt &')
-os.system('source /rshome/ruiyang.ma/snps-2018/docker/bin/eda.sh && cd router_simple && eda make sim  >> ../tb-output.txt &')
+os.system('cd router_simple && make sim >> ../sim-launch.log 2>&1 &')
 
 os.system('sleep 2s')
 

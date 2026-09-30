@@ -1,5 +1,5 @@
-VCS_HOME=/usr/synopsys/vcs/O-2018.09-SP2
-UVM_HOME=/usr/synopsys/vcs/O-2018.09-SP2/etc/uvm
+VCS_HOME ?=
+UVM_HOME ?= $(VCS_HOME)/etc/uvm
 plat=amd64
 
 # COV_FLAG= 
@@ -7,27 +7,19 @@ plat=amd64
 COV_FLAG= -cm line+branch
 COMP_FLAG=+vc -sverilog ${UVM_HOME}/src/dpi/uvm_dpi.cc ${VCS_HOME}/${plat}/lib/libucapi.a -ldl -lm -lpthread -lstdc++ -CFLAGS -DVCS 
 
-DOCKER=mry-eda-vcs18
-DOCKER_CMD=docker exec ${DOCKER} bash -c
-CMD_PLUS=source /etc/bashrc
-CMD_PLUS+=; LD_PRELOAD=/usr/snpslmd-hack.so /usr/synopsys/scl/2018.06/linux64/bin/lmgrd -c /usr/synopsys/scl/2018.06/admin/license/Synopsys.dat -l /dev/null
-CMD_PLUS+=; cd '${PWD}';
-
 all:
 	rm -f ../tb-output.txt
 	touch ../tb-output.txt
 	make comp sim gencov
 
 comp:
+	@if [ -z "$(VCS_HOME)" ]; then echo "Set VCS_HOME to the root of your VCS installation" >&2; exit 1; fi
 	UVM_HOME=${UVM_HOME} vcs -full64 ${COV_FLAG} ${COMP_FLAG} -timescale=1ns/1ps -f filelist.f +plusarg_save +ntb_random_seed_automatic
 
 sim:
 	rm ../tb-output.txt
 	touch ../tb-output.txt
 	./simv ${COV_FLAG} >> ../tb-output.txt
-
-sim-mry:
-	${DOCKER_CMD} "${CMD_PLUS} ./simv ${COV_FLAG}"
 
 gencov:
 # urg -dir simv.vdb
