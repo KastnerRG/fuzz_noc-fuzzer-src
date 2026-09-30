@@ -1,0 +1,14 @@
+VCS_HOME ?=
+UVM_HOME ?= $(VCS_HOME)/etc/uvm
+VCS_LIB ?= $(VCS_HOME)/amd64/lib
+
+.PHONY: comp native-proxy
+comp:
+	@test -n "$(VCS_HOME)" || { echo 'Set VCS_HOME to a licensed VCS installation' >&2; exit 1; }
+	UVM_HOME="$(UVM_HOME)" vcs -full64 -sverilog -cm line+branch -cm_hier dut-coverage.txt \
+		"$(UVM_HOME)/src/dpi/uvm_dpi.cc" -CFLAGS "-DVCS -std=c++17" \
+		-LDFLAGS "-Wl,--no-as-needed -L$(VCS_LIB) -Wl,-rpath,$(VCS_LIB) -lucapi -ldl -lm -lpthread -lstdc++" \
+		-timescale=1ns/1ps -f filelist.native.f
+
+native-proxy:
+	g++ -std=c++17 -O2 -Wall -Wextra -Werror fuzz_interface/proxy.cpp -o ../native-proxy
